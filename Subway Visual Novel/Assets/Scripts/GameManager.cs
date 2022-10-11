@@ -190,13 +190,43 @@ public class GameManager : MonoBehaviour
     {
         Vector2 _xPosition = ((_isLeft) ? m_leftFirstPos : m_rightFirstPos).x * Vector2.right;
 
+        /*if (_targetStage[0] != null)
+        {
+            _targetStage[0].GetComponent<TextBox>().targetPosition = (_isLeft) ? m_leftFirstPos : m_rightFirstPos;
+        }*/
+
         for (int i = 1; i < _targetStage.Length; i++)
         {
-            if (_targetStage[i] != null && (_targetStage[i-1] != null)){
+            if (_targetStage[i] != null)
+            {
+                int _goDownSteps = 0;
+
+                for (int j = 1; i - j >= 0; j++)
+                {
+                    if (_targetStage[i - j] != null)
+                    {
+                        _goDownSteps = j;
+                        break;
+                    }
+                }
+
+                if (_goDownSteps != 0)
+                {
+                    _targetStage[i].GetComponent<TextBox>().targetPosition = (Vector2)_xPosition
+                        + Vector2.up * (_targetStage[i - _goDownSteps].GetComponent<TextBox>().targetPosition.y +
+                        +_targetStage[i].rectTransform.sizeDelta.y + m_lineSpace);
+                } else
+                {
+                    _targetStage[i].GetComponent<TextBox>().targetPosition = ((_isLeft) ? m_leftFirstPos : m_rightFirstPos)
+                        + Vector2.up * (_targetStage[i].rectTransform.sizeDelta.y + m_lineSpace);
+                }
+            }
+
+            /*if (_targetStage[i] != null && (_targetStage[i-1] != null)){
                 _targetStage[i].GetComponent<TextBox>().targetPosition = (Vector2) _xPosition
                     + Vector2.up * (_targetStage[i - 1].GetComponent<TextBox>().targetPosition.y +  
                     + _targetStage[i].rectTransform.sizeDelta.y + m_lineSpace);
-            }
+            }*/
         }
     }
 
