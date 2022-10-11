@@ -7,14 +7,14 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] Canvas m_uiCanvas;
+    [SerializeField] GameObject m_uiCanvas;
     [SerializeField] List<TextMeshProUGUI> m_textBoxList = new List<TextMeshProUGUI>();
     //[SerializeField] List<TextMeshProUGUI> m_textBoxLeft = new List<TextMeshProUGUI>();
     //[SerializeField] List<TextMeshProUGUI> m_textBoxRight = new List<TextMeshProUGUI>();
-    [SerializeField] List<TextMeshProUGUI> m_textWaitLeft = new List<TextMeshProUGUI>();
-    [SerializeField] List<TextMeshProUGUI> m_textWaitRight = new List<TextMeshProUGUI>();
-    public TextMeshProUGUI[] m_textStageLeft;
-    public TextMeshProUGUI[] m_textStageRight;
+    public List<TextMeshProUGUI> textWaitLeft = new List<TextMeshProUGUI>();
+    public List<TextMeshProUGUI> textWaitRight = new List<TextMeshProUGUI>();
+    public TextMeshProUGUI[] textStageLeft;
+    public TextMeshProUGUI[] textStageRight;
 
     [SerializeField] Vector2 m_leftFirstPos;
     [SerializeField] Vector2 m_rightFirstPos;
@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] float m_lineSpace;
     public float textBoxMoveSmoothTime;
-    public float textColorTransitionTime;
+    public float textDestroyTime;
 
     void Start()
     {
@@ -37,33 +37,13 @@ public class GameManager : MonoBehaviour
         }
 
         //Set up on stage arrays
-        m_textStageLeft = new TextMeshProUGUI[m_textWaitLeft.Count];
-        m_textStageRight = new TextMeshProUGUI[m_textWaitRight.Count];
-
-        /*for (int i = 0; i < m_textStageLeft.Length; i++)
-        {
-            m_textStageLeft[i] = null;
-        }
-
-        for (int i = 0; i < m_textStageRight.Length; i++)
-        {
-            m_textStageRight[i] = null;
-        }*/
-
+        textStageLeft = new TextMeshProUGUI[textWaitLeft.Count];
+        textStageRight = new TextMeshProUGUI[textWaitRight.Count];
     }
 
     void Update()
     {
-        //Update top position
-        /*if (m_textStageLeft[m_textStageLeft.Length - 1] != null)
-        {
-            m_leftTopPos = m_textStageLeft[m_textStageLeft.Length - 1].rectTransform.anchoredPosition;
-        }
-
-        if (m_textStageRight[m_textStageRight.Length - 1] != null)
-        {
-            m_rightTopPos = m_textStageRight[m_textStageRight.Length - 1].rectTransform.anchoredPosition;
-        }*/
+        AdjustBoxPositions(textStageLeft, true);
 
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -72,15 +52,13 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            NewLine(m_textStageRight, m_textWaitRight, true, "THIS IS A VERY LONG TEXT!");
+            //NewLine(textStageRight, textWaitRight, true, "THIS IS A VERY LONG TEXT!");
         }
-    }
 
-    void UpdateTextBox(bool _isLeft, bool _isSelection, string _text)
-    {
-        //List<TextMeshProUGUI> _updatingGroup = (_isLeft) ? m_textBoxLeft : m_textBoxRight;
-        int _horizontalMoveDir = _isLeft ? 1 : -1;
-
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            ClearUp();
+        }
 
     }
 
@@ -128,10 +106,11 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        _textBoxScript.isSelection = false;
         AdjustBoxPositions(_targetStage, _textBoxScript.isLeft);
     }
 
-    void PushUpLine(TextMeshProUGUI _textBox, TextMeshProUGUI[] _targetStage)
+    public void PushUpLine(TextMeshProUGUI _textBox, TextMeshProUGUI[] _targetStage)
     {
         TextBox _targetTextBoxScript = _textBox.gameObject.GetComponent<TextBox>();
         int _targetIndex = _targetTextBoxScript.currentIndexOnStage + 1;
@@ -139,11 +118,12 @@ public class GameManager : MonoBehaviour
         if (_targetIndex >= _targetStage.Length)
         {
             //Generate a fake text and move it up
-            GameObject _fakeText = Instantiate(_textBox.gameObject, _textBox.rectTransform.anchoredPosition, Quaternion.identity);
+            ClearText(_textBox);
+            /*GameObject _fakeText = Instantiate(_textBox.gameObject, _textBox.rectTransform.anchoredPosition, Quaternion.identity);
             _fakeText.GetComponent<TextBox>().targetPosition = Vector2.up * 100 + _textBox.rectTransform.anchoredPosition;
             _fakeText.GetComponent<TextBox>().targetTransparency = 0;
             StartCoroutine(DestroyFakeText(_fakeText));
-            ResetTextBox(_textBox);
+            ResetTextBox(_textBox);*/
             _targetStage[_targetIndex - 1] = null;
             return;
         }
@@ -166,7 +146,7 @@ public class GameManager : MonoBehaviour
 
     //Creating new line, only do this after 
     //_textBox that's being pushed into should be the first on the waiting line
-    void NewLine(TextMeshProUGUI[] _targetStage, List<TextMeshProUGUI> _fromWaitLine, bool _isSelection, string _text)
+    public void NewLine(TextMeshProUGUI[] _targetStage, List<TextMeshProUGUI> _fromWaitLine, bool _isSelection, string _text, int _nextLineIndex)
     {
         for (int i = _targetStage.Length - 1; i >= 0; i--)
         {
@@ -187,6 +167,9 @@ public class GameManager : MonoBehaviour
         //Set target position
         TextBox _targetTextBoxScript = _textBox.gameObject.GetComponent<TextBox>();
 
+        //Set next line index
+        _targetTextBoxScript.nextLineIndex = _nextLineIndex;
+
         //Set if this is a selection
         if (_isSelection)
         {
@@ -203,7 +186,7 @@ public class GameManager : MonoBehaviour
         AdjustBoxPositions(_targetStage, _targetTextBoxScript.isLeft);
     }
 
-    void AdjustBoxPositions(TextMeshProUGUI[] _targetStage, bool _isLeft)
+    public void AdjustBoxPositions(TextMeshProUGUI[] _targetStage, bool _isLeft)
     {
         Vector2 _xPosition = ((_isLeft) ? m_leftFirstPos : m_rightFirstPos).x * Vector2.right;
 
@@ -213,25 +196,53 @@ public class GameManager : MonoBehaviour
                 _targetStage[i].GetComponent<TextBox>().targetPosition = (Vector2) _xPosition
                     + Vector2.up * (_targetStage[i - 1].GetComponent<TextBox>().targetPosition.y +  
                     + _targetStage[i].rectTransform.sizeDelta.y + m_lineSpace);
-                if (i == 2)
-                {
-                    Debug.Log(_targetStage[i].GetComponent<TextBox>().targetPosition);
-                }
-
             }
         }
     }
 
-    void ResetTextBox(TextMeshProUGUI _textBox)
+    public void ClearUp()
+    {
+        for (int i = 0; i<textStageLeft.Length; i++)
+        {
+            if (textStageLeft[i] != null)
+            {
+                ClearText(textStageLeft[i]);
+                textStageLeft[i] = null;
+            }
+        }
+
+        for (int i = 0; i < textStageRight.Length; i++)
+        {
+            if (textStageRight[i] != null)
+            {
+                ClearText(textStageRight[i]);
+                textStageRight[i] = null;
+            }
+        }
+    }
+
+    public void ClearText(TextMeshProUGUI _t)
+    {
+        //Generate a fake text and move it up
+        GameObject _fakeText = Instantiate(_t.gameObject, _t.transform.position, Quaternion.identity, m_uiCanvas.transform);
+        _fakeText.GetComponent<TextMeshProUGUI>().rectTransform.anchoredPosition = _t.rectTransform.anchoredPosition;
+        _fakeText.GetComponent<TextBox>().targetPosition = Vector2.up * 100 + _t.rectTransform.anchoredPosition;
+        _fakeText.GetComponent<TextBox>().thisIsFake = true;
+        StartCoroutine(DestroyFakeText(_fakeText));
+        ResetTextBox(_t);
+        return;
+    }
+
+    public void ResetTextBox(TextMeshProUGUI _textBox)
     {
         //Add the text box to corresponding wait list
         if (_textBox.GetComponent<TextBox>().isLeft)
         {
-            m_textWaitLeft.Add(_textBox);
+            textWaitLeft.Add(_textBox);
         }
         else
         {
-            m_textWaitRight.Add(_textBox);
+            textWaitRight.Add(_textBox);
         }
 
         _textBox.text = "Placeholder";
@@ -247,7 +258,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator DestroyFakeText(GameObject _toDestroy)
     {
-        yield return new WaitForSeconds(textColorTransitionTime);
+        yield return new WaitForSeconds(textDestroyTime);
         Destroy(_toDestroy);
     }
 }
