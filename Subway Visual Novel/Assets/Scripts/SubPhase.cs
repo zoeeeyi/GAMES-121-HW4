@@ -68,24 +68,6 @@ public class SubPhase : MonoBehaviour
                 {
                     subPhaseStarted = false;
                 }
-
-                /*while (true)
-                {
-                    PushNewLine(m_singleLines[m_lineIndex]);
-                    m_lineIndex++;
-
-                    if (m_lineIndex >= m_singleLines.Count)
-                    {
-                        EndPhase();
-                        return;
-                    }
-
-                    if (!m_singleLines[m_lineIndex].isSelection)
-                    {
-                        subPhaseStarted = false;
-                        break;
-                    }
-                }*/
             }
         }
     }

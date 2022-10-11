@@ -1712,7 +1712,7 @@ MonoBehaviour:
   m_rightFirstPos: {x: 170, y: -120}
   m_lineSpace: 10
   textBoxMoveSmoothTime: 0.5
-  textDestroyTime: 1
+  textDestroyTime: 0.6
 --- !u!4 &1196283936
 Transform:
   m_ObjectHideFlags: 0

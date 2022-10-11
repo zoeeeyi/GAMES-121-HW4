@@ -4,24 +4,19 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Sirenix.OdinInspector;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField] GameObject m_uiCanvas;
     [SerializeField] List<TextMeshProUGUI> m_textBoxList = new List<TextMeshProUGUI>();
-    //[SerializeField] List<TextMeshProUGUI> m_textBoxLeft = new List<TextMeshProUGUI>();
-    //[SerializeField] List<TextMeshProUGUI> m_textBoxRight = new List<TextMeshProUGUI>();
-    public List<TextMeshProUGUI> textWaitLeft = new List<TextMeshProUGUI>();
-    public List<TextMeshProUGUI> textWaitRight = new List<TextMeshProUGUI>();
-    public TextMeshProUGUI[] textStageLeft;
-    public TextMeshProUGUI[] textStageRight;
+    [DisableInEditorMode] public List<TextMeshProUGUI> textWaitLeft = new List<TextMeshProUGUI>();
+    [DisableInEditorMode] public List<TextMeshProUGUI> textWaitRight = new List<TextMeshProUGUI>();
+    [DisableInEditorMode] public TextMeshProUGUI[] textStageLeft;
+    [DisableInEditorMode] public TextMeshProUGUI[] textStageRight;
 
     [SerializeField] Vector2 m_leftFirstPos;
     [SerializeField] Vector2 m_rightFirstPos;
-    Vector3 m_leftTopPos;
-    Vector3 m_rightTopPos;
-    List<Vector3> m_leftPositionList;
-    List<Vector3> m_rightPositionList;
 
     [SerializeField] float m_lineSpace;
     public float textBoxMoveSmoothTime;
@@ -48,11 +43,6 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            //NewLine(textStageRight, textWaitRight, true, "THIS IS A VERY LONG TEXT!");
         }
 
         if (Input.GetKeyDown(KeyCode.E))
@@ -119,11 +109,6 @@ public class GameManager : MonoBehaviour
         {
             //Generate a fake text and move it up
             ClearText(_textBox);
-            /*GameObject _fakeText = Instantiate(_textBox.gameObject, _textBox.rectTransform.anchoredPosition, Quaternion.identity);
-            _fakeText.GetComponent<TextBox>().targetPosition = Vector2.up * 100 + _textBox.rectTransform.anchoredPosition;
-            _fakeText.GetComponent<TextBox>().targetTransparency = 0;
-            StartCoroutine(DestroyFakeText(_fakeText));
-            ResetTextBox(_textBox);*/
             _targetStage[_targetIndex - 1] = null;
             return;
         }
@@ -190,11 +175,6 @@ public class GameManager : MonoBehaviour
     {
         Vector2 _xPosition = ((_isLeft) ? m_leftFirstPos : m_rightFirstPos).x * Vector2.right;
 
-        /*if (_targetStage[0] != null)
-        {
-            _targetStage[0].GetComponent<TextBox>().targetPosition = (_isLeft) ? m_leftFirstPos : m_rightFirstPos;
-        }*/
-
         for (int i = 1; i < _targetStage.Length; i++)
         {
             if (_targetStage[i] != null)
@@ -221,12 +201,6 @@ public class GameManager : MonoBehaviour
                         + Vector2.up * (_targetStage[i].rectTransform.sizeDelta.y + m_lineSpace);
                 }
             }
-
-            /*if (_targetStage[i] != null && (_targetStage[i-1] != null)){
-                _targetStage[i].GetComponent<TextBox>().targetPosition = (Vector2) _xPosition
-                    + Vector2.up * (_targetStage[i - 1].GetComponent<TextBox>().targetPosition.y +  
-                    + _targetStage[i].rectTransform.sizeDelta.y + m_lineSpace);
-            }*/
         }
     }
 
